@@ -11,9 +11,9 @@ pip install -e .
 ```
 Dependencies:
 
-numpy 1.13
-pandas 0.20
-matplotlib 2.0
+-numpy 1.13
+-pandas 0.20
+-matplotlib 2.0
 
 ## grid.py 
 
