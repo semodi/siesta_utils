@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn.metrics.pairwise import rbf_kernel
 
 
 def triu_to_full(m_triu):
