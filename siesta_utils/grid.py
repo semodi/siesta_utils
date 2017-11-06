@@ -184,7 +184,7 @@ def glimpse(rmin=[0, 0, 0], rmax=0, plane=2, height = 0):
 
 
 def quadrupole_moment(X, Y, Z, V, coord, rho, diagonal = False, verbose = False):
-    """Calculates the quadrupole moment in Debye of a given charge distribution
+    """Calculates the quadrupole moment in atomic units of a given charge distribution
 
     Parameters
     ----------
