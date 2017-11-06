@@ -6,14 +6,13 @@ import matplotlib
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import pandas as pd
+from conversions import *
 
 rho = np.zeros(2)
 rho_val = np.zeros(2)
 unitcell = np.zeros(2)
 grid = np.zeros(2)
 
-AtoBohr = 1.889725989
-Dtoau = 0.393430307
 
 
 # ================= Data import ====================== #
