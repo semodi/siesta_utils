@@ -69,7 +69,7 @@ def get_data(file_path):
 
     # closed shell -> we don't care about spin.
     rho = rho[:, :, :, 0]
-
+    return rho, unitcell, grid
 
 def check_norm():
     """ Check normalization of charge density
