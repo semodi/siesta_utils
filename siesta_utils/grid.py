@@ -6,7 +6,7 @@ import matplotlib
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import pandas as pd
-from conversions import *
+from .conversions import *
 
 rho = np.zeros(2)
 rho_val = np.zeros(2)
