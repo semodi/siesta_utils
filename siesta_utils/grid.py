@@ -85,6 +85,32 @@ def check_norm():
 
 # ==================== Mesh Functions ==================== #
 
+def smallest_box(atom_pos, box_buffer=0.5):
+    """Determine smallest box that includes all molecules.
+       Called by fit_poly if rmax = -1
+
+       Parameters
+       ----------
+       atom_pos: (,3) np.array; atomic coordinates
+       box_buffer: float; buffer around smallest box
+
+       Returns
+       --------
+       rmax: (3) list; the maximum box dimensions in 3 euclid. directions
+    """
+
+    rmax = [0, 0, 0]
+    for a in atom_pos:
+        for i in range(3):
+            if abs(a[i]) > rmax[i]:
+                rmax[i] = abs(a[i])
+    for i in range(3):
+        rmax[i] = (int)((rmax[i] + box_buffer) * grid[i] / unitcell[i, i])
+        if rmax[i] > grid[i]:
+            rmax[i] = grid[i]
+    return rmax
+
+
 def plane_cut(data,
               plane,
               height,
