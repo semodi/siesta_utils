@@ -6,6 +6,7 @@ import matplotlib
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import pandas as pd
+
 from .conversions import *
 
 rho = np.zeros(2)
@@ -171,7 +172,7 @@ def mesh_3d(rmin=[0, 0, 0], rmax=0, scaled = False):
     """
 
     if rmax == 0:
-        mid_grid = (grid / 2).astype(int)
+        mid_grid = np.floor(grid / 2).astype(int) 
         rmax = mid_grid
 
     # resolve the periodic boundary conditions
