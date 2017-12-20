@@ -90,9 +90,10 @@ def import_matrix(data_file, index_file = None):
         raise Exception("Error in DMF file (Indexing)")
 
 
-    entries = np.genfromtxt(data_file)
+    entries = np.genfromtxt(data_file)[-n_entries:]
     d_matrix = np.zeros([n_orb,n_orb])
-
+    
+    
     cnt = 0
     for i, row in enumerate(rows):
         for c in range(row):
@@ -103,6 +104,7 @@ def import_matrix(data_file, index_file = None):
     if not np.allclose(d_matrix.T,d_matrix):
         print('Warning! Density Matrix not Symmetric')
 
+    
     return d_matrix
 
 
