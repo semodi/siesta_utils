@@ -158,7 +158,7 @@ def plane_cut(data,
         return A, B
 
 
-def mesh_3d(rmin=[0, 0, 0], rmax=0, scaled = False):
+def mesh_3d(rmin=[0, 0, 0], rmax=0, scaled = False, pbc = True, indexing = 'xy'):
     """Returns a 3d mesh taking into account periodic boundary conditions
 
         Parameters
@@ -176,11 +176,17 @@ def mesh_3d(rmin=[0, 0, 0], rmax=0, scaled = False):
         rmax = mid_grid
 
     # resolve the periodic boundary conditions
-    x_pbc = list(range(-rmax[0], -rmin[0])) + list(range(rmin[0], rmax[0] + 1))
-    y_pbc = list(range(-rmax[1], -rmin[1])) + list(range(rmin[1], rmax[1] + 1))
-    z_pbc = list(range(-rmax[2], -rmin[2])) + list(range(rmin[2], rmax[2] + 1))
+    if pbc:
+        x_pbc = list(range(-rmax[0], -rmin[0])) + list(range(rmin[0], rmax[0] + 1))
+        y_pbc = list(range(-rmax[1], -rmin[1])) + list(range(rmin[1], rmax[1] + 1))
+        z_pbc = list(range(-rmax[2], -rmin[2])) + list(range(rmin[2], rmax[2] + 1))
+    else:
+        x_pbc = list(range(rmin[0], rmax[0] )) + list(range(-rmax[0], -rmin[0]))
+        y_pbc = list(range(rmin[1], rmax[1] )) + list(range(-rmax[1], -rmin[1]))
+        z_pbc = list(range(rmin[2], rmax[2] )) + list(range(-rmax[2], -rmin[2]))
 
-    Xm, Ym, Zm = np.meshgrid(x_pbc, y_pbc, z_pbc)
+
+    Xm, Ym, Zm = np.meshgrid(x_pbc, y_pbc, z_pbc, indexing = indexing)
     if scaled:
         Z = Zm * unitcell[2, 2] / grid[2]
         Y = Ym * unitcell[1, 1] / grid[1]
