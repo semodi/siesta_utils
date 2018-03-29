@@ -297,3 +297,37 @@ def dipole_moment(X, Y, Z, V, coord, rho, verbose = False):
 
     return (ionic_contrib - charge_com)/Dtoau
 
+def rho_at_cartesian(xi, siesta, unit = 'A', method = 'linear'):    
+    
+    if unit == 'A':
+        xi *= AtoBohr
+    elif unit != 'Bohr':
+        raise Exception('Unit has to be either "A" or "Bohr"')
+        
+    if np.any(np.abs(xi) > siesta.unitcell[0,0]) or \
+    np.any(np.abs(xi) > siesta.unitcell[1,1]) or \
+    np.any(np.abs(xi) > siesta.unitcell[2,2]):
+        raise Exception('xi out of bounds')
+        
+    # Grid size
+    a = np.array([siesta.unitcell[i,i]/siesta.grid[i] for i in range(3)]).reshape(1,3)
+    
+    # Real space inquiry points to mesh
+    Xi = np.round(xi/a).astype(int)
+    
+    # Find surrounding mesh points
+    Xs = np.array(Xi)
+    Xzeros = np.zeros_like(Xi)
+    for x in [-1,0,1]:
+        for y in [-1,0,1]:
+            for z in [-1,0,1]:
+                for i, entry in enumerate(np.array([x,y,z])):
+                    Xzeros[:,i] = entry
+                Xs = np.concatenate([Xs, Xi + Xzeros])
+                Xzeros = np.zeros_like(Xi)
+    Xs = np.unique(Xs, axis=0)
+    
+    # Surrounding mesh points in real space
+    xs = Xs * a
+    
+    return griddata(xs, siesta.rho[Xs[:,0], Xs[:,1], Xs[:,2]], xi, method = method)
