@@ -6,7 +6,7 @@ import matplotlib
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import pandas as pd
-
+import struct
 from .conversions import *
 from scipy.interpolate import griddata
 rho = np.zeros(2)
@@ -17,6 +17,35 @@ grid = np.zeros(2)
 
 
 # ================= Data import ====================== #
+def get_data_bin(file_path):
+
+    global rho
+    global unitcell
+    global grid
+
+    #Warning: Only works for cubic cells!!!
+    #TODO: Implement for arb. cells
+
+    bin_file = open(file_path, mode = 'rb')
+
+    unitcell = '<I9dI'
+    grid = '<I4iI'
+    
+
+    unitcell = np.array(struct.unpack(unitcell,
+        bin_file.read(struct.calcsize(unitcell))))[1:-1].reshape(3,3)
+
+    grid = np.array(struct.unpack(grid,bin_file.read(struct.calcsize(grid))))[1:-1]
+    if (grid[0] == grid[1] == grid[2]) and grid[3] == 1:
+        a = grid[0]
+    else:
+        raise Exception('get_data_bin cannot handle non-cubic unitcells or spin')  
+
+    block = '<' + 'I{}fI'.format(a)*a*a
+    content = np.array(struct.unpack(block,bin_file.read(struct.calcsize(block))))
+
+    rho = content.reshape(a+2, a, a, order = 'F')[1:-1,:,:]
+    return rho, unitcell, grid
 
 def get_data(file_path):
     """Import data from RHO file (or similar real-space grid files)
