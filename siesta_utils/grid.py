@@ -30,7 +30,7 @@ def get_data_bin(file_path):
 
     unitcell = '<I9dI'
     grid = '<I4iI'
-    
+
 
     unitcell = np.array(struct.unpack(unitcell,
         bin_file.read(struct.calcsize(unitcell))))[1:-1].reshape(3,3)
@@ -39,7 +39,7 @@ def get_data_bin(file_path):
     if (grid[0] == grid[1] == grid[2]) and grid[3] == 1:
         a = grid[0]
     else:
-        raise Exception('get_data_bin cannot handle non-cubic unitcells or spin')  
+        raise Exception('get_data_bin cannot handle non-cubic unitcells or spin')
 
     block = '<' + 'I{}fI'.format(a)*a*a
     content = np.array(struct.unpack(block,bin_file.read(struct.calcsize(block))))
@@ -201,7 +201,7 @@ def mesh_3d(rmin=[0, 0, 0], rmax=0, scaled = False, pbc = True, indexing = 'xy')
     """
 
     if rmax == 0:
-        mid_grid = np.floor(grid / 2).astype(int) 
+        mid_grid = np.floor(grid / 2).astype(int)
         rmax = mid_grid
 
     # resolve the periodic boundary conditions
@@ -216,10 +216,26 @@ def mesh_3d(rmin=[0, 0, 0], rmax=0, scaled = False, pbc = True, indexing = 'xy')
 
 
     Xm, Ym, Zm = np.meshgrid(x_pbc, y_pbc, z_pbc, indexing = indexing)
+
+    U = np.array(unitcell) # Matrix to go from real space to mesh coordinates
+    for i in range(3):
+        U[i,:] = U[i,:] / grid[i]
+
+    a = np.linalg.norm(unitcell, axis = 1)/grid[:3]
+
+    Rm = np.concatenate([Xm.reshape(*Xm.shape,1),
+                         Ym.reshape(*Xm.shape,1),
+                         Zm.reshape(*Xm.shape,1)], axis = 3)
+
     if scaled:
-        Z = Zm * unitcell[2, 2] / grid[2]
-        Y = Ym * unitcell[1, 1] / grid[1]
-        X = Xm * unitcell[0, 0] / grid[0]
+        R = np.einsum('ij,klmj -> iklm', U.T , Rm)
+        X = R[0,:,:,:]
+        Y = R[1,:,:,:]
+        Z = R[2,:,:,:]
+
+        # Z = Zm * unitcell[2, 2] / grid[2]
+        # Y = Ym * unitcell[1, 1] / grid[1]
+        # X = Xm * unitcell[0, 0] / grid[0]
         return X,Y,Z
     else:
         return Xm,Ym,Zm
@@ -308,7 +324,7 @@ def dipole_moment(X, Y, Z, V, coord, rho, verbose = False):
     par: [float]; Gaussian fitting parameters
     n: int; number of Gaussians
     verbose: boolean; print Ionic and Electronic contribution
-        
+
     Returns
     --------
     float; Dipole moment in Debye
@@ -326,24 +342,24 @@ def dipole_moment(X, Y, Z, V, coord, rho, verbose = False):
 
     return (ionic_contrib - charge_com)/Dtoau
 
-def rho_at_cartesian(xi, siesta, unit = 'A', method = 'linear'):    
-    
+def rho_at_cartesian(xi, siesta, unit = 'A', method = 'linear'):
+
     if unit == 'A':
         xi *= AtoBohr
     elif unit != 'Bohr':
         raise Exception('Unit has to be either "A" or "Bohr"')
-        
+
     if np.any(np.abs(xi) > siesta.unitcell[0,0]) or \
     np.any(np.abs(xi) > siesta.unitcell[1,1]) or \
     np.any(np.abs(xi) > siesta.unitcell[2,2]):
         raise Exception('xi out of bounds')
-        
+
     # Grid size
     a = np.array([siesta.unitcell[i,i]/siesta.grid[i] for i in range(3)]).reshape(1,3)
-    
+
     # Real space inquiry points to mesh
     Xi = np.round(xi/a).astype(int)
-    
+
     # Find surrounding mesh points
     Xs = np.array(Xi)
     Xzeros = np.zeros_like(Xi)
@@ -355,8 +371,8 @@ def rho_at_cartesian(xi, siesta, unit = 'A', method = 'linear'):
                 Xs = np.concatenate([Xs, Xi + Xzeros])
                 Xzeros = np.zeros_like(Xi)
     Xs = np.unique(Xs, axis=0)
-    
+
     # Surrounding mesh points in real space
     xs = Xs * a
-    
+
     return griddata(xs, siesta.rho[Xs[:,0], Xs[:,1], Xs[:,2]], xi, method = method)
